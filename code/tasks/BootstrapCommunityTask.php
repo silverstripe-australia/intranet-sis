@@ -4,88 +4,90 @@
  * @author <marcus@silverstripe.com.au>
  * @license BSD License http://www.silverstripe.org/bsd-license
  */
-class BootstrapCommunityTask extends BuildTask {
+class BootstrapCommunityTask extends BuildTask
+{
 
-	public function run($request) {
-		Restrictable::set_enabled(false);
-		Versioned::reading_stage('Stage');
+    public function run($request)
+    {
+        Restrictable::set_enabled(false);
+        Versioned::reading_stage('Stage');
 
-		$admin = Security::findAnAdministrator();
-		Session::set("loggedInAs", $admin->ID);
+        $admin = Security::findAnAdministrator();
+        Session::set("loggedInAs", $admin->ID);
 
-		$toPublish = array();
+        $toPublish = array();
 
-		$home = SiteTree::get()->filter('URLSegment', 'home')->first();
-		if ($home) {
-			$this->o("Home page already exists, _not_ bootstrapping");
-			return;
-		}
+        $home = SiteTree::get()->filter('URLSegment', 'home')->first();
+        if ($home) {
+            $this->o("Home page already exists, _not_ bootstrapping");
+            return;
+        }
 
-		$site = Multisites::inst()->getCurrentSite();
-		$toPublish[] = $site;
+        $site = Multisites::inst()->getCurrentSite();
+        $toPublish[] = $site;
 
-		$dashboard = SiteDashboardPage::create(array(
-				'Title' => 'Dashboard',
-				'URLSegment' => 'dashboard',
-				'ParentID' => $site->ID
-		));
-		$dashboard->write();
-		$this->o("Created Dashboard");
-		$toPublish[] = $dashboard;
+        $dashboard = SiteDashboardPage::create(array(
+                'Title' => 'Dashboard',
+                'URLSegment' => 'dashboard',
+                'ParentID' => $site->ID
+        ));
+        $dashboard->write();
+        $this->o("Created Dashboard");
+        $toPublish[] = $dashboard;
 
-		$home = RedirectorPage::create(array(
-				'Title' => 'Home',
-				'URLSegment' => 'home',
-				'ParentID' => $site->ID
-		));
-		$home->LinkToID = $dashboard->ID;
-		$home->write();
-		$toPublish[] = $home;
-		$this->o("Created homepage");
+        $home = RedirectorPage::create(array(
+                'Title' => 'Home',
+                'URLSegment' => 'home',
+                'ParentID' => $site->ID
+        ));
+        $home->LinkToID = $dashboard->ID;
+        $home->write();
+        $toPublish[] = $home;
+        $this->o("Created homepage");
 
-		$group = Group::create(array(
-				'Title' => 'All members',
-		));
+        $group = Group::create(array(
+                'Title' => 'All members',
+        ));
 
-		$events = Calendar::create(array(
-				'Title' => 'Events',
-				'URLSegment' => 'events',
-				'ParentID' => $site->ID
-		));
+        $events = Calendar::create(array(
+                'Title' => 'Events',
+                'URLSegment' => 'events',
+                'ParentID' => $site->ID
+        ));
 
-		$events->write();
-		$toPublish[] = $events;
+        $events->write();
+        $toPublish[] = $events;
 
-		$dummyEvent = CalendarEvent::create(array(
-				'Title' => 'Sample event',
-				'ParentID' => $events->ID,
-		));
-		$dummyEvent->write();
-		$toPublish[] = $dummyEvent;
+        $dummyEvent = CalendarEvent::create(array(
+                'Title' => 'Sample event',
+                'ParentID' => $events->ID,
+        ));
+        $dummyEvent->write();
+        $toPublish[] = $dummyEvent;
 
-		$dateTime = CalendarDateTime::create(array(
-				'StartDate' => strtotime('+1 week'),
-				'AllDay' => 1,
-				'EventID' => $dummyEvent->ID,
-		));
-		$dateTime->write();
-		
-		$files = FileListingPage::create(array(
-				'Title' => 'File Listing',
-				'ParentID' => $site->ID,
-		));
-		$files->write();
-		$toPublish[] = $files;
+        $dateTime = CalendarDateTime::create(array(
+                'StartDate' => strtotime('+1 week'),
+                'AllDay' => 1,
+                'EventID' => $dummyEvent->ID,
+        ));
+        $dateTime->write();
+        
+        $files = FileListingPage::create(array(
+                'Title' => 'File Listing',
+                'ParentID' => $site->ID,
+        ));
+        $files->write();
+        $toPublish[] = $files;
 
-		$news = MediaHolder::create(array(
-				'Title' => 'News',
-				'MediaTypeID' => 3,
-				'ParentID' => $site->ID,
-		));
-		$news->write();
-		$toPublish[] = $news;
+        $news = MediaHolder::create(array(
+                'Title' => 'News',
+                'MediaTypeID' => 3,
+                'ParentID' => $site->ID,
+        ));
+        $news->write();
+        $toPublish[] = $news;
 
-		$text = <<<WORDS
+        $text = <<<WORDS
 			<p>Oh no! Pull a sickie, this epic cuzzie is as rip-off as a snarky morepork. Mean while, in behind the 
 				bicycle shed, Lomu and The Hungery Caterpilar were up to no good with a bunch of cool jelly tip icecreams. 
 					The flat stick force of his chundering was on par with Rangi's solid rimu chilly bin. Put the jug on 
@@ -102,42 +104,42 @@ class BootstrapCommunityTask extends BuildTask {
 			
 WORDS;
 
-		$story = MediaPage::create(array(
-			'Title' => 'Sample news item',
-			'Content' => $text,
-			'ParentID'		=> $news->ID,
-		));
-		$story->write();
-		$toPublish[] = $story;
+        $story = MediaPage::create(array(
+            'Title' => 'Sample news item',
+            'Content' => $text,
+            'ParentID'        => $news->ID,
+        ));
+        $story->write();
+        $toPublish[] = $story;
 
-		$group->write();
-		$this->o("Created All Members group");
+        $group->write();
+        $this->o("Created All Members group");
 
-		
-		$member = Member::create(array(
-			'FirstName' => 'Anon',
-			'Surname'	=> 'Ymous',
-			'Email'		=> 'anon@test.com'
-		));
-		$member->write();
-		$member->Groups()->add($group);
-		
-		
-		$site->Theme = 'ssau-minimalist';
-		$site->LoggedInGroups()->add($group);
-		$site->write();
-		$this->o("Configured Site object");
+        
+        $member = Member::create(array(
+            'FirstName' => 'Anon',
+            'Surname'    => 'Ymous',
+            'Email'        => 'anon@test.com'
+        ));
+        $member->write();
+        $member->Groups()->add($group);
+        
+        
+        $site->Theme = 'ssau-minimalist';
+        $site->LoggedInGroups()->add($group);
+        $site->write();
+        $this->o("Configured Site object");
 
-		foreach ($toPublish as $item) {
-			if (!is_object($item)) {
-				print_r($item);
-				continue;
-			}
-			$item->doPublish();
-		}
-		$this->o("Published everything");
-		
-		$message = <<<MSG
+        foreach ($toPublish as $item) {
+            if (!is_object($item)) {
+                print_r($item);
+                continue;
+            }
+            $item->doPublish();
+        }
+        $this->o("Published everything");
+        
+        $message = <<<MSG
 Your community system has been succesfully installed! Some things you might be interested in doing from this point are...
 
 * Replying to this post! 
@@ -146,18 +148,18 @@ Your community system has been succesfully installed! Some things you might be i
 * Create some events
 * Add some RSS feeds to your Announcements dashlet (use the wrench to configure it!)
 MSG;
-		
-		singleton('MicroBlogService')->createPost(null, $message, 'Installed!', 0, null, array('logged_in' => 1));
+        
+        singleton('MicroBlogService')->createPost(null, $message, 'Installed!', 0, null, array('logged_in' => 1));
 
-		Restrictable::set_enabled(true);
-	}
+        Restrictable::set_enabled(true);
+    }
 
-	private function o($txt) {
-		if (PHP_SAPI == 'cli') {
-			echo "$txt\n";
-		} else {
-			echo "$txt<br/>\n";
-		}
-	}
-
+    private function o($txt)
+    {
+        if (PHP_SAPI == 'cli') {
+            echo "$txt\n";
+        } else {
+            echo "$txt<br/>\n";
+        }
+    }
 }
