@@ -1,20 +1,21 @@
 <?php
 
-	/**
-	 *	Write a serialised list of material against a member for retrieval when nothing is found locally.
-	 */
+    /**
+     *	Write a serialised list of material against a member for retrieval when nothing is found locally.
+     */
 
-class MemberListExtension extends DataExtension {
+class MemberListExtension extends DataExtension
+{
 
-	private static $db = array(
-		'SerialisedMaterialList' => 'Text'
-	);
+    private static $db = array(
+        'SerialisedMaterialList' => 'Text'
+    );
 
-	public function updateCMSFields(FieldList $fields) {
+    public function updateCMSFields(FieldList $fields)
+    {
 
-		// Remove the serialised list view from the CMS.
+        // Remove the serialised list view from the CMS.
 
-		$fields->removeByName('SerialisedMaterialList');
-	}
-
+        $fields->removeByName('SerialisedMaterialList');
+    }
 }
